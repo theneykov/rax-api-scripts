@@ -77,26 +77,62 @@ if srv_num > srv_count or srv_num <= 0:
 
 print "Please enter the name of the new image you wish to create: "
 new_image_name = raw_input()
+new_image_name = new_image_name.strip()
+
+print "Please enter the name of the new server to be created: "
+new_server = raw_input()
+new_server = new_server.strip()
 
 for c in server_matrix:
 	if int(c[0]) == srv_num:
 		print "Creating image '" + new_image_name + "' of server '" + c[2] + "' (" + c[1] + ") ."
-		cs.servers.create_image(c[1], new_image_name)
+		img_uuid = cs.servers.create_image(c[1], new_image_name)
 
-
-
-#print "Server images in current region:"
-#grab the Ubuntu 12.04 LTS image
-#for img in cs.images.list("detailed=True"):
-#	print img.id + " - " + img.name
+print "Saving image '" + new_image_name + "' with uuid=" + str(img_uuid)
+img_active = False
+while not img_active:
+	time.sleep(60)
+	for img in cs.images.list():
+		if img.id == img_uuid:
+			if img.status == "ACTIVE":
+				img_active = True
+				print "Image was saved."
+			else:
+				print "Image is still saving. Sleeping 60 seconds."
 
 #Create server from image img_id
-#print "Creating server: ", current_name
-#Create server:
-
-srv_name = "delme2"
+server_matrix=[]
+print "Creating server '" + new_server + "' from image '" + new_image_name + "'."
 try:
-	server = cs.servers.create(srv_name, "bad-image-name-test6f5e3600-9dd9-4ef6-9b14-4b5192370c44", "2")
+	server = cs.servers.create(new_server, img_uuid, "2")
+	server_matrix.append([str(server.id),str(server.name),str(server.adminPass),""])
 except:
 	print "Failed to build server from image."
 
+received_ips = False
+while not received_ips:        
+	print "Waiting for server to fully provision. Sleeping for 30 seconds."                
+	time.sleep(30)
+	print
+	received_ips = True
+                
+	#get server list and populate server_matrix with IPs
+	for y in cs.servers.list():
+		index = 0
+		for s in server_matrix:
+			if y.id == server_matrix[index][0]:
+				#print i.networks
+				for k, v in y.networks.iteritems():
+					if k == "public":
+						if len(v[0]) > 15:
+							#print v[1]
+							server_matrix[index][3] = str(v[1])
+						else:
+							#print v[0]
+							server_matrix[index][3] = str(v[0])
+			index += 1
+	print "['                uuid                ', ' name ', 'root password', 'IP address']"
+	for x in server_matrix:
+		print x
+		if len(x[3]) < 1:
+			received_ips = False
