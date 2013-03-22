@@ -50,6 +50,7 @@ for c in cont:
 	if c == cdn_cont:
 		dst_exists = True
 		print "Containter '" + c + "' already exists. Exiting..."
+		sys.exit(1)
 
 if not dst_exists:
 	#create container
