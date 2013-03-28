@@ -42,14 +42,17 @@ else:
     print("Authentication failed. Exiting...")
     sys.exit(1)
 
+# variable to hold the count of how many servers will be built
+srv_count = 5
+
 print("You are about to create three 512MB Ubuntu 12.04 LTS Cloud Servers.")
 print("Please enter the servers' base name (ie. type: web to create servers" +
-      "web1, web2, web3)")
+      "web1, web2, web3, ...)")
 print("Base name:"),
 cs_base_name = raw_input()
 
-print("Server names will be: ")
-for i in range(1, 4):
+print("Server names will be:")
+for i in range(1, srv_count + 1):
     print(cs_base_name + str(i)) 
 
 print("Proceed with creating server instances? y/n:"),
@@ -60,16 +63,16 @@ if answer == "y":
     cs = pyrax.cloudservers
     # grab the Ubuntu 12.04 LTS image
     for img in cs.images.list():
-        if "Ubuntu 12.04 LTS" in img.name:
+        if "nodeXX-chef-snap-00" in img.name: #if "Ubuntu 12.04 LTS" in img.name:
             cs_image = img
-    #grab the 512NB flavor
+    # grab the 512NB flavor
     for flv in cs.flavors.list():
         if flv.ram == 512:
             cs_flavor = flv
-    #create matrix to hold server information
+    # create matrix to hold server information
     server_matrix = []
 	
-    for s in range(1,4):
+    for s in range(1, srv_count + 1):
         current_name = cs_base_name + str(s)
         print("Creating server: " + current_name)
         # print("Image:" + cs_image.id
@@ -82,17 +85,17 @@ if answer == "y":
     print("Servers are building...waiting to obtain IP information.")
 	
     received_ips = False
+    count_done = 0
     while not received_ips:
-	count_done = 0		
-        print("Not all IPs have been assigned. (" + str(count_done) + "/" + "3) Sleeping for 30 seconds.")
+        print("Not all IPs have been assigned. (" + str(count_done) + "/" + str(srv_count) + ") Sleeping for 30 seconds.")
         time.sleep(30)
         received_ips = True
-        #get server list and populate server_matrix with IPs
+        # get server list and populate server_matrix with IPs
         for y in cs.servers.list():
             index = 0
             for s in server_matrix:
                 if y.id == server_matrix[index][0]:
-                    #print(i.networks
+                    # print(i.networks
                     for k, v in y.networks.iteritems():
                         if k == "public":
                             if len(v[0]) > 15:
@@ -103,15 +106,18 @@ if answer == "y":
                                 server_matrix[index][3] = str(v[0])
                             count_done += 1
                 index += 1
+	count_done = 0
         for x in server_matrix:
-            #print(x)
+            # print(x)
             if len(x[3]) < 1:
                 received_ips = False
+            else:
+                count_done += 1
     print("")
     print("['                uuid                ', ' name '," +
           " 'root password', 'IP address']")
     for x in server_matrix:
-        print x
+        print(x)
 else:
 	print("Aborting.")
 print("")
