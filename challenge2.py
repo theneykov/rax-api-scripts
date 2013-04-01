@@ -51,7 +51,7 @@ for srv in cs.servers.list():
     srv_count += 1
     # print str(srv_count) + ") " + srv.id + " " + srv.name
     # add entry to matrix so user can select server number later to image
-    server_matrix.append([srv_count,str(srv.id),str(srv.name)])	
+    server_matrix.append([srv_count, str(srv.id), str(srv.name)])
 
 if srv_count == 0:
     print("You don't have any NextGen servers in this region to create an" +
@@ -72,7 +72,7 @@ try:
 except:
     print("Value must be an integer. Exiting.")
     sys.exit(1)
-	
+
 # srv_num = int(srv_num)
 if srv_num > srv_count or srv_num <= 0:
     print("Error specifying server number: Outside of range. Exiting.")
@@ -89,7 +89,7 @@ new_server = new_server.strip()
 for c in server_matrix:
     if int(c[0]) == srv_num:
         print("")
-        print("Creating image '" + new_image_name + "' of server '" + c[2] + 
+        print("Creating image '" + new_image_name + "' of server '" + c[2] +
               "' (" + c[1] + ") .")
         img_uuid = cs.servers.create_image(c[1], new_image_name)
 
@@ -104,21 +104,23 @@ while not img_active:
                 print("Image was saved.")
                 print("")
             else:
-                print("Image is still saving. Sleeping 60 seconds." + 
+                print("Image is still saving. Sleeping 60 seconds." +
                       " Progress: " + str(img.progress) + "%")
 
 # Create server from image img_id
-server_matrix=[]
-print("Creating server '" + new_server + "' from image '" + new_image_name + "'.")
+server_matrix = []
+print("Creating server '" + new_server + "' from image '" +
+      new_image_name + "'.")
 try:
     server = cs.servers.create(new_server, img_uuid, "2")
-    server_matrix.append([str(server.id),str(server.name),str(server.adminPass),""])
+    server_matrix.append([str(server.id), str(server.name),
+                          str(server.adminPass), ""])
 except:
     print("Failed to build server from image.")
 
 received_ips = False
-while not received_ips:        
-    print("Waiting for server to fully provision. Sleeping for 30 seconds.")                
+while not received_ips:
+    print("Waiting for server to fully provision. Sleeping for 30 seconds.")
     time.sleep(30)
     print("")
     received_ips = True
@@ -142,7 +144,7 @@ while not received_ips:
         if len(x[3]) < 1:
             received_ips = False
 print("")
-print("['                uuid                ', ' name ', " + 
+print("['                uuid                ', ' name ', " +
       "'root password', 'IP address']")
 for x in server_matrix:
-	print(x)
+    print(x)

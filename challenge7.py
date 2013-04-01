@@ -16,7 +16,7 @@
 
 """
 Challenge 7:
-Write a script that will create 2 Cloud Servers and add them as nodes to a 
+Write a script that will create 2 Cloud Servers and add them as nodes to a
 new Cloud Load Balancer.
 """
 
@@ -45,7 +45,8 @@ cs = pyrax.cloudservers
 # Number of servers to create and attach behind a new Cloud Load Balancer
 srv_count = 2
 
-print("You're about to create " + str(srv_count) + " Cloud Servers and attach them " +
+print("You're about to create " + str(srv_count) +
+      " Cloud Servers and attach them " +
       "behind a newly created Cloud Load Balancer.")
 print("")
 print("List of available images:")
@@ -80,7 +81,8 @@ for img in img_matrix:
 flv_matrix = []
 for flv in cs.flavors.list():
     # Matrix list number, flavor ID, name, ram, swap, VCPUs
-    flv_matrix.append([str(flv.id), str(flv.name), str(flv.ram), str(flv.swap), str(flv.vcpus)])
+    flv_matrix.append([str(flv.id), str(flv.name), str(flv.ram),
+                      str(flv.swap), str(flv.vcpus)])
 
 print("")
 print("List of available flavors:")
@@ -95,10 +97,10 @@ server_flv_num = raw_input()
 server_flv_num = server_flv_num.strip()
 
 try:
-	server_flv_num = int(server_flv_num)
+    server_flv_num = int(server_flv_num)
 except ValueError:
-        print("Please enter an integer from the list above. Exiting...")
-        sys.exit(1)
+    print("Please enter an integer from the list above. Exiting...")
+    sys.exit(1)
 
 if server_flv_num >= 2 and server_flv_num <= 8:
     pass
@@ -107,7 +109,8 @@ else:
     sys.exit(1)
 
 print("")
-print("Please enter the servers' base name (ie. type: web to create servers web1, webN etc...)")
+print("Please enter the servers' base name (ie. type: web to " +
+      "create servers web1, webN etc...)")
 print("Base name:"),
 cs_base_name = raw_input()
 cs_base_name = cs_base_name.strip()
@@ -129,21 +132,24 @@ if answer == "y":
     #create matrix to hold server information
     server_matrix = []
 
-    for s in range(1,srv_count+1):
+    for s in range(1, srv_count+1):
         current_name = cs_base_name + str(s)
         print("Creating server: " + str(current_name))
-        #print("Image: ", server_img_uuid)
-        #print("Flavor: ", server_flv_num)
-        #Create server:
-        server = cs.servers.create(current_name, server_img_uuid, server_flv_num)
-        #Add server information to matrix
-        #                            uuid           name             root password,      publicnet,  servicenet
-        server_matrix.append([str(server.id), str(server.name), str(server.adminPass), "", ""])
+        # print("Image: ", server_img_uuid)
+        # print("Flavor: ", server_flv_num)
+        # Create server:
+        server = cs.servers.create(current_name, server_img_uuid,
+                                   server_flv_num)
+        # Add server information to matrix
+        #  uuid, name, root, password, publicnet, servicenet
+        server_matrix.append([str(server.id), str(server.name),
+                             str(server.adminPass), "", ""])
     print("Servers are building...waiting to obtain IP information.")
 
     received_ips = False
     while not received_ips:
-        print("Server IPs have not been provisioned yet. Sleeping for 30 seconds.")
+        print("Server IPs have not been provisioned yet. " +
+              "Sleeping for 30 seconds.")
         time.sleep(30)
         received_ips = True
         #get server list and populate server_matrix with IPs
@@ -177,22 +183,24 @@ if answer == "y":
     lb_node = []
     index = 0
     for s in server_matrix:
-        lb_node.append(clb.Node(address=str(server_matrix[index][4]), port=80, condition="ENABLED"))
+        lb_node.append(clb.Node(address=str(server_matrix[index][4]),
+                       port=80, condition="ENABLED"))
         index += 1
     vip = clb.VirtualIP(type="PUBLIC")
-    lb = clb.create(lb_name, port=80, protocol="HTTP", nodes=lb_node, virtual_ips=[vip])
+    lb = clb.create(lb_name, port=80, protocol="HTTP", nodes=lb_node,
+                    virtual_ips=[vip])
 
     lb = clb.list()
     print("Current Cloud Load Balancers in this region:")
     for details in lb:
         print("")
-        print("CLB: " + str(details.id) + " " + str(details.name) + " " + 
+        print("CLB: " + str(details.id) + " " + str(details.name) + " " +
               str(details.status) + " " + str(details.virtual_ips) + " " +
               str(details.port) + " " + str(details.protocol))
         print("Nodes:")
         for n in details.nodes:
-            print("      \- " + str(n.id) + " " + str(n.condition) + " " + 
-                  str(n.status) + " " + str(n.type) + " " + 
+            print("      \- " + str(n.id) + " " + str(n.condition) + " " +
+                  str(n.status) + " " + str(n.type) + " " +
                   str(n.address).strip() + ":" + str(n.port).strip())
 else:
     sys.exit(0)

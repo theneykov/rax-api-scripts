@@ -15,7 +15,7 @@
 # limitations under the License.
 
 """
-Challenge 6: 
+Challenge 6:
 Write a script that creates a CDN-enabled container in Cloud Files.
 """
 
@@ -30,7 +30,8 @@ cred_file = os.path.expanduser("~/.rackspace_cloud_credentials")
 try:
     pyrax.set_credential_file(cred_file)
 except exc.AuthenticationFailed:
-    print("Did you remember to replace the credential file with your actual username and api_key?")
+    print("Did you remember to replace the credential file with your " +
+          "actual username and api_key?")
 
 if pyrax.identity.authenticated:
     print("Successfully authenticated.")
@@ -38,7 +39,8 @@ else:
     print("Authentication failed. Exiting...")
     sys.exit(1)
 
-print("Please enter the name of the CDN-enabled container you wish to create:"),
+print("Please enter the name of the CDN-enabled container you wish to" +
+      " create:"),
 cdn_cont = raw_input()
 cdn_cont = cdn_cont.strip()
 
