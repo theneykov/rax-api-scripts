@@ -54,18 +54,39 @@ dst_exists = False
 for c in cont:
     if c == cdn_cont:
         dst_exists = True
-        print("Containter '" + c + "' already exists. Proceed anyway? y/n: ")
+        print("Containter '" + c + "' already exists. Proceed anyway? y/n:"),
         ans = raw_input()
         if ans != "y":
             sys.exit(1)
 
-if not dst_exists:
-    #create container
-    dst = cf.create_container(cdn_cont)
-    print("Created conainer '" + dst.name + "'.")
-    print("Enabling container for CDN...")
-    pyrax.cloudfiles.make_container_public(dst.name, ttl=900)
-    # Set meta data for the container
-    meta_data = {"X-Container-Meta-Web-Index": "index.html"}
-    cf.set_container_metadata(dst, meta_data)
-    print("Done.")
+dst = cf.create_container(cdn_cont)
+print("Created conainer '" + dst.name + "'.")
+print("Enabling container for CDN...")
+pyrax.cloudfiles.make_container_public(dst.name, ttl=900)
+# Set meta data for the container
+meta_data = {"X-Container-Meta-Web-Index": "index.html"}
+cf.set_container_metadata(dst, meta_data)
+dst = cf.get_container(cdn_cont)
+print("CDN URI: " + str(dst.cdn_uri))
+cdn_uri = str(dst.cdn_uri)[7:]
+
+file_content = "Welcome to your Cloud Files container index.html page."
+obj = cf.store_object(cdn_cont, "index.html", file_content)
+
+print("Please enter the CNAME to be created for '" + cdn_uri + "'.")
+print("e.g. (staticsite.example.com):"),
+cname = raw_input()
+cname = cname.strip()
+cname_domain = cname[cname.find(".")+1:]
+print("Creating CNAME record '" + cname + "' for URI '" + cdn_uri + "'.")
+
+dns = pyrax.cloud_dns
+# see if domain exists
+domain_exists = False
+for domain in dns.get_domain_iterator():
+    if str(domain.name) == cname_domain:
+        print("Domain exists: " + str(domain.name))
+        domain_exists = True
+
+if not domain_exists:
+    print("Domain doesn't exist. Creating domain '" + cname_domain + "'.")
