@@ -16,7 +16,7 @@
 
 """
 Challenge 4:
-Write a script that uses Cloud DNS to create a new A record when passed 
+Write a script that uses Cloud DNS to create a new A record when passed
 a FQDN and IP address as arguments.
 """
 
@@ -45,7 +45,8 @@ print("Please enter the IP address for the A record you wish to create:"),
 rec_ip = raw_input()
 rec_ip = rec_ip.strip()
 
-print("Please enter the name of the A record to be created for '" + rec_ip + "'.")
+print("Please enter the name of the A record to be created for '" +
+      rec_ip + "'.")
 print("e.g. (ftp.example.com):"),
 rec_name = raw_input()
 rec_name = rec_name.strip()
@@ -66,23 +67,13 @@ if not domain_exists:
     print("Please enter your email address:"),
     dom_email = raw_input()
     dom_email = dom_email.strip()
-    print("TTL for the domain is required. Minimum 300, recommended 3600.")
-    print("Please enter the TTL (in seconds) for the domain:"),
-    dom_ttl = raw_input()
-    dom_ttl = int(dom_ttl)
     dom = dns.create(name=rec_dom, emailAddress=dom_email)
 
-print("TTL for the record is required. Minimum 300, recommended 3600.")
-print("Please enter the TTL (in seconds) for the record:"),
-rec_ttl = raw_input()
-rec_ttl = int(rec_ttl)
-
 dom_rec = [{
-             "type": "A",
-             "name": rec_name,
-             "data": rec_ip,
-             "ttl": rec_ttl
-             }]
+           "type": "A",
+           "name": rec_name,
+           "data": rec_ip
+           }]
 
 for rec in dom.list_records():
     # see if a record already exists
