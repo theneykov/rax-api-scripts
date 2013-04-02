@@ -78,7 +78,6 @@ print("e.g. (staticsite.example.com):"),
 cname = raw_input()
 cname = cname.strip()
 cname_domain = cname[cname.find(".")+1:]
-print("Creating CNAME record '" + cname + "' for URI '" + cdn_uri + "'.")
 
 dns = pyrax.cloud_dns
 # see if domain exists
@@ -86,7 +85,35 @@ domain_exists = False
 for domain in dns.get_domain_iterator():
     if str(domain.name) == cname_domain:
         print("Domain exists: " + str(domain.name))
+        dom = domain
         domain_exists = True
+        break
 
 if not domain_exists:
     print("Domain doesn't exist. Creating domain '" + cname_domain + "'.")
+    print("Please enter your email address:"),
+    dom_email = raw_input()
+    dom_email = dom_email.strip()
+    print("TTL for the domain is required. Minimum 300, recommended 3600.")
+    print("Please enter the TTL (in seconds) for the domain:"),
+    dom_ttl = raw_input()
+    dom_ttl = int(dom_ttl)
+    dom = dns.create(name=cname_domain, emailAddress=dom_email)
+
+cname_rec = [{
+             "type": "CNAME",
+             "name": cname,
+             "data": cdn_uri,
+             "ttl": 3600
+             }]
+
+for rec in dom.list_records():
+    # see if a record already exists
+    if rec.name == cname:
+        print("A record '" + cname + "' already exists. Exiting...")
+        sys.exit(1)
+
+# create the record
+print("Creating CNAME record '" + cname + "' for URI '" + cdn_uri + "'.")
+dom.add_record(cname_rec)
+print("Done.")
