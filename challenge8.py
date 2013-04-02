@@ -104,7 +104,7 @@ cname_rec = [{
              "type": "CNAME",
              "name": cname,
              "data": cdn_uri,
-             "ttl": 3600
+             "ttl": dom_ttl 
              }]
 
 for rec in dom.list_records():
