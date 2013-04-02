@@ -43,7 +43,7 @@ else:
     sys.exit(1)
 
 # variable to hold the count of how many servers will be built
-srv_count = 5
+srv_count = 3
 
 print("You are about to create three 512MB Ubuntu 12.04 LTS Cloud Servers.")
 print("Please enter the servers' base name (ie. type: web to create servers" +
