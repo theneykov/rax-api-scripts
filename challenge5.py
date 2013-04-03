@@ -92,16 +92,32 @@ if db_flv < 1 or db_flv > flv_index:
 
 print("Creating DBaaS instance '" + db_inst_name + "'...")
 
-"""
 db_inst = cdb.create(db_inst_name, flavor=db_flv, volume=db_vol)
-for d in db_inst:
-    print(d.name)
-    print(d.id)
-    print(d.hostname)
-    print(d.status)
+
+"""
+print(db_inst.name)
+print(db_inst.id)
+print(db_inst.hostname)
+print(db_inst.status)
 """
 
-
-
-
-print("Done.")
+db_built = False
+while not db_built:
+    db_instances = cdb.list()
+    for dbs in db_instances:
+        if str(dbs.id) == str(db_inst.id):
+            if str(dbs.status) == "ACTIVE":
+                db_built = True
+            else:
+                print("DBaaS instance is still building...Sleeping 30 seconds.")
+                time.sleep(30)
+        
+print("Creating database...")
+db = db_inst.create_database(db_db_name)
+print("Creating user...")
+user = db_inst.create_user(name=db_db_user, password=db_db_pass, database_names=[db_db_name])
+print("Done")
+print("")
+print("You can connect to the database using the following command:")
+print("mysql -u " + db_db_user + " -p -h " + str(db_inst.hostname))
+print("")
