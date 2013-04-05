@@ -22,6 +22,7 @@ the fqdn, and creates a DNS entry for the fqdn pointing to the server's
 public IP
 """
 
+import argparse
 import os
 import sys
 import string
@@ -43,4 +44,13 @@ else:
     print("Authentication failed. Exiting...")
     sys.exit(1)
 
+parser = argparse.ArgumentParser(description='Create server and create DNS ' +
+                                 'record to point to its IP address.')
+parser.add_argument('--fqdn', '-n', required=True, help='FQDN')
+parser.add_argument('--image', '-i', required=True, help='Image ID')
+parser.add_argument('--flavor', '-f', required=True, help='Flavor ID')
+args = parser.parse_args()
 
+print("--fqdn: " + str(args.fqdn))
+print("--image: " + str(args.image))
+print("--flavor: " + str(args.flavor))
