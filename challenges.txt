@@ -42,6 +42,7 @@ Challenge 10: Write an application that will:
               - Set up LB monitor and custom error page.
               - Create a DNS record based on a FQDN for the LB VIP.
               - Write the error page html to a file in cloud files for backup.
+
 Challenge 11: Write an application that will:
               - Create an SSL terminated load balancer (Create self-signed certificate.)
               - Create a DNS record that should be pointed to the load balancer.
@@ -51,3 +52,11 @@ Challenge 11: Write an application that will:
               - All three servers should have a private Cloud Network shared between them.
               - Login information to all three servers returned in a readable format as
                 the result of the script, including connection information.
+
+Challenge 13: Write an application that nukes everything in your Cloud Account. It should:
+              - Delete all Cloud Servers
+              - Delete all Custom Images
+              - Delete all Cloud Files Containers and Objects
+              - Delete all Databases
+              - Delete all Networks
+              - Delete all CBS Volumes
