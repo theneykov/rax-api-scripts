@@ -32,10 +32,10 @@ import pyrax
 import pyrax.exceptions as exc
 import time
 
-#print("Using credentials file: ~/.rackspace_cloud_credentials")
-#cred_file = os.path.expanduser("~/.rackspace_cloud_credentials")
-print("Using credentials file: ~/.rackspace_DELETE_ALL_THE_THINGS")
-cred_file = os.path.expanduser("~/.rackspace_DELETE_ALL_THE_THINGS")
+print("Using credentials file: ~/.rackspace_cloud_credentials")
+cred_file = os.path.expanduser("~/.rackspace_cloud_credentials")
+#print("Using credentials file: ~/.rackspace_DELETE_ALL_THE_THINGS")
+#cred_file = os.path.expanduser("~/.rackspace_DELETE_ALL_THE_THINGS")
 try:
     pyrax.set_credential_file(cred_file)
 except exc.AuthenticationFailed:
