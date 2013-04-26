@@ -26,6 +26,12 @@ import string
 import pyrax
 import pyrax.exceptions as exc
 import time
+import argparse
+
+parser = argparse.ArgumentParser(description='Create A record for FQDN and IP')
+parser.add_argument('--fqdn', '-n', required=True, help='FQDN')
+parser.add_argument('--ip', '-i', required=True, help='IP Address')
+args = parser.parse_args()
 
 print("Using credentials file: ~/.rackspace_cloud_credentials")
 cred_file = os.path.expanduser("~/.rackspace_cloud_credentials")
@@ -41,14 +47,9 @@ else:
     print("Authentication failed. Exiting...")
     sys.exit(1)
 
-print("Please enter the IP address for the A record you wish to create:"),
-rec_ip = raw_input()
-rec_ip = rec_ip.strip()
+rec_ip = str(args.ip)
+rec_name = str(args.fqdn)
 
-print("Please enter the name of the A record to be created for '" +
-      rec_ip + "'.")
-print("e.g. (ftp.example.com):"),
-rec_name = raw_input()
 rec_name = rec_name.strip()
 rec_dom = rec_name[rec_name.find(".")+1:]
 
@@ -63,10 +64,11 @@ for domain in dns.get_domain_iterator():
         break
 
 if not domain_exists:
-    print("Domain doesn't exist. Creating domain '" + rec_dom + "'.")
-    print("Please enter your email address:"),
-    dom_email = raw_input()
-    dom_email = dom_email.strip()
+    #print("Domain doesn't exist. Creating domain '" + rec_dom + "'.")
+    # print("Please enter your email address:"),
+    # dom_email = raw_input()
+    #dom_email = dom_email.strip()
+    dom_email = "your@email.address.com"
     dom = dns.create(name=rec_dom, emailAddress=dom_email)
 
 dom_rec = [{
@@ -83,5 +85,6 @@ for rec in dom.list_records():
 
 # create the record
 print("Creating 'A' record '" + rec_name + "' for IP '" + rec_ip + "'.")
+time.sleep(10)
 dom.add_record(dom_rec)
 print("Done.")
