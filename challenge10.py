@@ -49,10 +49,11 @@ else:
 srv_count = 2 # variable to hold the count of how many servers will be built
 srv_img = "e4dbdba7-b2a4-4ee5-8e8f-4595b6d694ce" # Ubuntu 12.04 LTS (Precise Pangolin)"
 srv_flv = 2 # 512MB Flvaor
+lb_name = "Challenge10"
 
 # Pre-define custom error page
-lb_error_page = "<html><body>Service is temporarily unavailable.<br>" +
-                "Please contact support @ 1-800-961-4454</body></html>"
+lb_error_page = "<html><body>Service is temporarily unavailable.<br>\n\
+Please contact support @ 1-800-961-4454</body></html>"
 
 def get_ssh_key():
     """
@@ -75,7 +76,7 @@ def build_instances():
     print("You are about to create " + str(srv_count) +
           " 512MB Ubuntu 12.04 LTS Cloud Servers.")
     print("Please enter the servers' base name (ie. type: web to create servers" +
-          " web1, web2, web3, ...)")
+          " web1, web2,..., webN.)")
     print("Base name:"),
     cs_base_name = raw_input()
     
@@ -143,6 +144,28 @@ def build_instances():
         print("Exiting...")
         sys.exit(1)
 
+def wait_for_lb(lb_id):
+    """
+    Wait for Load Balancer to finish operation before continuing.
+    Call this after new builds or config changes.
+    """
+    clb = pyrax.cloud_loadbalancers
+    lb_built = False
+    while not lb_built:
+        lb_list = clb.list()
+        for l in lb_list:
+            if lb_id == l.id:
+                if l.status == "ACTIVE":
+                    lb_built = True
+                    print("Done. Configuing load balancer...")
+                else:
+                    if l.status == "ERROR":
+                        print("Load balancer is in ERROR state. Exiting...")
+                        sys.exit(1)
+                    else:
+                        print "Processing request. Sleeping 10 seconds."
+                        time.sleep(10)
+
 def build_loadbalancer(server_matrix, lb_error_page):
     """
     Create Cloud Load Balancer and attach servers in server_matrix
@@ -158,13 +181,69 @@ def build_loadbalancer(server_matrix, lb_error_page):
     vip = clb.VirtualIP(type="PUBLIC")
     lb = clb.create(lb_name, port=80, protocol="HTTP", nodes=lb_node,
                     virtual_ips=[vip])
-
+    wait_for_lb(lb.id) # wait for CLB to build
     # Add health monitor
     lb.add_health_monitor(type="CONNECT", delay=10, timeout=10,
                           attemptsBeforeDeactivation=2)
+    wait_for_lb(lb.id) # wait for health monitoring to process
     # Set custome error page
     lb.set_error_page(lb_error_page)
+    wait_for_lb(lb.id) # Wait for error page request to process
 
-    
+    # Return public IPv4 address
+    for k, v in lb.sourceAddresses.iteritems():
+        if k == "ipv4Public":
+            return v
+
+def create_lb_fqdn(lb_ip):
+    """
+    Create 'A' record based on the provided FQDN for the CLB's public IPv4.
+    """
+    lb_fqdn = raw_input("Please enter FQDN for the Load Balancer: ")
+    lb_fqdn_domain = lb_fqdn[lb_fqdn.find(".")+1:]    
+    dns = pyrax.cloud_dns
+
+    # see if domain exists
+    domain_exists = False
+    for domain in dns.get_domain_iterator():
+        if str(domain.name) == lb_fqdn_domain:
+            print("Domain exists: " + str(domain.name))
+            dom = domain
+            domain_exists = True
+            break
+
+    if not domain_exists:
+        print("Domain doesn't exist. Creating domain '" + lb_fqdn_domain + "'.")
+        dom_email = "racker@rackspace.com"
+        dom = dns.create(name=lb_fqdn_domain, emailAddress=dom_email)
+
+    fqdn_rec = [{
+                "type": "A",
+                "name": lb_fqdn,
+                "data": lb_ip,
+                "ttl": 3600
+                }]
+
+    for rec in dom.list_records():
+        # see if a record already exists
+        if rec.name == lb_fqdn:
+            print("A record '" + lb_fqdn + "' already exists. Exiting...")
+            sys.exit(1)
+
+    # create the record
+    print("Creating 'A' record '" + lb_fqdn + "' for '" +
+          lb_ip + "'.")
+    dom.add_record(fqdn_rec)
+
 server_matrix = build_instances()
-build_loadbalancer(server_matrix, lb_error_page)
+lb_ip = build_loadbalancer(server_matrix, lb_error_page)
+#lb_ip = "64.49.225.7" # for testing only
+create_lb_fqdn(lb_ip)
+
+cf = pyrax.cloudfiles
+cf_container = raw_input("Enter container name to store custom error page: ")
+dst = cf.create_container(cf_container)
+print("Created container " + dst.name + ".")
+print("Storing error page...")
+obj = cf.store_object(cf_container, "ch10-CLB-error-page.html", lb_error_page)
+print("Done.")
