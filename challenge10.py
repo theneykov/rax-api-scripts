@@ -16,7 +16,7 @@
 
 """
 Challenge 10:
-- Create 2 servers, supplying a ssh key to be installed at 
+- Create 2 servers, supplying a ssh key to be installed at
   /root/.ssh/authorized_keys.
 - Create a load balancer
 - Add the 2 new servers to the LB
@@ -46,14 +46,15 @@ else:
     print("Authentication failed. Exiting...")
     sys.exit(1)
 
-srv_count = 2 # variable to hold the count of how many servers will be built
-srv_img = "e4dbdba7-b2a4-4ee5-8e8f-4595b6d694ce" # Ubuntu 12.04 LTS (Precise Pangolin)"
-srv_flv = 2 # 512MB Flvaor
+srv_count = 2  # variable to hold the count of how many servers will be built
+srv_img = "e4dbdba7-b2a4-4ee5-8e8f-4595b6d694ce"  # Ubuntu 12.04 LTS
+srv_flv = 2  # 512MB Flvaor
 lb_name = "Challenge10"
 
 # Pre-define custom error page
 lb_error_page = "<html><body>Service is temporarily unavailable.<br>\n\
 Please contact support @ 1-800-961-4454</body></html>"
+
 
 def get_ssh_key():
     """
@@ -61,43 +62,43 @@ def get_ssh_key():
     """
     ssh_key_location = raw_input("Enter the location of the ssh key file: ")
     if not os.path.exists(ssh_key_location):
-        print(ssh_key_location +": No such file or directory. Exiting...")
+        print(ssh_key_location + ": No such file or directory. Exiting...")
         sys.exit(1)
     else:
         if not os.path.isfile(ssh_key_location):
-            print(ssh_key_location +": Is not a file. Exiting...")
+            print(ssh_key_location + ": Is not a file. Exiting...")
             sys.exit(1)
         else:
             with open(ssh_key_location, 'r') as f:
                 ssh_key = f.read()
                 return ssh_key
 
+
 def build_instances():
     print("You are about to create " + str(srv_count) +
           " 512MB Ubuntu 12.04 LTS Cloud Servers.")
-    print("Please enter the servers' base name (ie. type: web to create servers" +
+    print("Please enter the servers' base name (ie. type: web to create" +
           " web1, web2,..., webN.)")
     print("Base name:"),
     cs_base_name = raw_input()
-    
     print("Server names will be:")
     for i in range(1, srv_count + 1):
         print(cs_base_name + str(i))
-    
     # Build DICT for injecting ssh key
     files = {"/root/.ssh/authorized_keys": get_ssh_key()}
-    
+
     answer = raw_input("Proceed with creating server instances? y/n: ")
-    
+
     if answer == "y":
         cs = pyrax.cloudservers
         server_matrix = []
-    
+
         for s in range(1, srv_count + 1):
             current_name = cs_base_name + str(s)
             print("Creating server: " + current_name)
             # Create server:
-            server = cs.servers.create(current_name, srv_img, srv_flv, files=files)
+            server = cs.servers.create(current_name, srv_img,
+                                       srv_flv, files=files)
             # Add server information to matrix
             server_matrix.append([str(server.id), str(server.name),
                                   str(server.adminPass), "", ""])
@@ -136,13 +137,14 @@ def build_instances():
                     count_done += 1
         print("")
         print("['                uuid                ', ' name ', " +
-          "'root password', '  Public IP  ', '  Service Net  ']")
+              "'root password', '  Public IP  ', '  Service Net  ']")
         for x in server_matrix:
             print(x)
         return server_matrix
     else:
         print("Exiting...")
         sys.exit(1)
+
 
 def wait_for_lb(lb_id):
     """
@@ -166,6 +168,7 @@ def wait_for_lb(lb_id):
                         print "Processing request. Sleeping 10 seconds."
                         time.sleep(10)
 
+
 def build_loadbalancer(server_matrix, lb_error_page):
     """
     Create Cloud Load Balancer and attach servers in server_matrix
@@ -181,26 +184,27 @@ def build_loadbalancer(server_matrix, lb_error_page):
     vip = clb.VirtualIP(type="PUBLIC")
     lb = clb.create(lb_name, port=80, protocol="HTTP", nodes=lb_node,
                     virtual_ips=[vip])
-    wait_for_lb(lb.id) # wait for CLB to build
+    wait_for_lb(lb.id)  # wait for CLB to build
     # Add health monitor
     lb.add_health_monitor(type="CONNECT", delay=10, timeout=10,
                           attemptsBeforeDeactivation=2)
-    wait_for_lb(lb.id) # wait for health monitoring to process
+    wait_for_lb(lb.id)  # wait for health monitoring to process
     # Set custome error page
     lb.set_error_page(lb_error_page)
-    wait_for_lb(lb.id) # Wait for error page request to process
+    wait_for_lb(lb.id)  # Wait for error page request to process
 
     # Return public IPv4 address
     for k, v in lb.sourceAddresses.iteritems():
         if k == "ipv4Public":
             return v
 
+
 def create_lb_fqdn(lb_ip):
     """
     Create 'A' record based on the provided FQDN for the CLB's public IPv4.
     """
     lb_fqdn = raw_input("Please enter FQDN for the Load Balancer: ")
-    lb_fqdn_domain = lb_fqdn[lb_fqdn.find(".")+1:]    
+    lb_fqdn_domain = lb_fqdn[lb_fqdn.find(".")+1:]
     dns = pyrax.cloud_dns
 
     # see if domain exists
@@ -213,7 +217,8 @@ def create_lb_fqdn(lb_ip):
             break
 
     if not domain_exists:
-        print("Domain doesn't exist. Creating domain '" + lb_fqdn_domain + "'.")
+        print("Domain doesn't exist. Creating domain '" +
+              lb_fqdn_domain + "'.")
         dom_email = "racker@rackspace.com"
         dom = dns.create(name=lb_fqdn_domain, emailAddress=dom_email)
 
@@ -237,7 +242,6 @@ def create_lb_fqdn(lb_ip):
 
 server_matrix = build_instances()
 lb_ip = build_loadbalancer(server_matrix, lb_error_page)
-#lb_ip = "64.49.225.7" # for testing only
 create_lb_fqdn(lb_ip)
 
 cf = pyrax.cloudfiles

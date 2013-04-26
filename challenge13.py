@@ -48,6 +48,7 @@ else:
     print("Authentication failed. Exiting...")
     sys.exit(1)
 
+
 def delete_all_clb():
     print("Deleting all Cloud Load Balancers...")
     clb = pyrax.cloud_loadbalancers
@@ -56,21 +57,26 @@ def delete_all_clb():
         lb.delete()
     print("Done.")
 
+
 def delete_all_dbaas():
     print("Deleting all Cloud Database Instances...")
-    cdb = pyrax.cloud_databases    
+    cdb = pyrax.cloud_databases
     for db in cdb.list():
         print("...deleting: " + str(db.id) + " " + str(db.name))
     print("Done.")
 
+
 def delete_all_servers():
     pass
+
 
 def delete_all_cbs():
     pass
 
+
 def delete_all_images():
-    pass    
+    pass
+
 
 def delete_all_cf():
     pass
@@ -87,4 +93,3 @@ if destroy == "Yes":
     delete_all_cf()
 else:
     print("Exiting. Nothing was changed or deleted.")
-
