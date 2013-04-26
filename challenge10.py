@@ -53,7 +53,7 @@ lb_name = "Challenge10"
 
 # Pre-define custom error page
 lb_error_page = "<html><body>Service is temporarily unavailable.<br>\n\
-Please contact support @ 1-800-961-4454</body></html>"
+Please contact Fanatical support @ 1-800-961-4454</body></html>"
 
 
 def get_ssh_key():
