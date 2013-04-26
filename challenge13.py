@@ -32,10 +32,10 @@ import pyrax
 import pyrax.exceptions as exc
 import time
 
-print("Using credentials file: ~/.rackspace_cloud_credentials")
-cred_file = os.path.expanduser("~/.rackspace_cloud_credentials")
-#print("Using credentials file: ~/.rackspace_DELETE_ALL_THE_THINGS")
-#cred_file = os.path.expanduser("~/.rackspace_DELETE_ALL_THE_THINGS")
+#print("Using credentials file: ~/.rackspace_cloud_credentials")
+#cred_file = os.path.expanduser("~/.rackspace_cloud_credentials")
+print("Using credentials file: ~/.rackspace_DELETE_ALL_THE_THINGS")
+cred_file = os.path.expanduser("~/.rackspace_DELETE_ALL_THE_THINGS")
 try:
     pyrax.set_credential_file(cred_file)
 except exc.AuthenticationFailed:
@@ -63,11 +63,17 @@ def delete_all_dbaas():
     cdb = pyrax.cloud_databases
     for db in cdb.list():
         print("...deleting: " + str(db.id) + " " + str(db.name))
+        db.delete()
     print("Done.")
 
 
 def delete_all_servers():
-    pass
+    print("Deleting all NextGen Cloud Servers")
+    cs = pyrax.cloudservers
+    for s in cs.servers.list():
+        print("...deleting: " + str(s.id) + " " + str(s.name))
+        s.delete()
+    print("Done.")
 
 
 def delete_all_cbs():
@@ -75,7 +81,12 @@ def delete_all_cbs():
 
 
 def delete_all_images():
-    pass
+    print("Deleting all NextGen Cloud Server Images")
+    cs = pyrax.cloudservers
+    for img in cs.images.list():
+        print("...deleting: " + img.id + img.name)
+        img.delete()
+    print("Done.")
 
 
 def delete_all_cf():
