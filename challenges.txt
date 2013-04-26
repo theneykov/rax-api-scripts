@@ -53,6 +53,15 @@ Challenge 11: Write an application that will:
               - Login information to all three servers returned in a readable format as
                 the result of the script, including connection information.
 
+Challenge 12: Write an application that will:
+              - Create a route in mailgun so that when an
+                email is sent to <YourSSO>@apichallenges.mailgun.org it calls your
+                Challenge 1 script that builds 3 servers.
+              - Assumptions:
+                Assume that challenge 1 can be kicked off by accessing
+                http://cldsrvr.com/challenge1
+              - We have an internal mailgun account for this challenge.
+
 Challenge 13: Write an application that nukes everything in your Cloud Account. It should:
               - Delete all Cloud Servers
               - Delete all Custom Images
