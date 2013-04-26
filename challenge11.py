@@ -34,6 +34,9 @@ import pyrax
 import pyrax.exceptions as exc
 import time
 
+print("Ah, no time.")
+sys.exit(0)
+
 print("Using credentials file: ~/.rackspace_cloud_credentials")
 cred_file = os.path.expanduser("~/.rackspace_cloud_credentials")
 try:

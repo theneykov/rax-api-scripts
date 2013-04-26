@@ -32,3 +32,5 @@ import pyrax
 import pyrax.exceptions as exc
 import time
 
+print("Ah, no time...")
+sys.exit(0)
